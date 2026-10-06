@@ -117,6 +117,30 @@ export class StreamPoller {
     this.#repository = repository;
   }
 
+  /** Send a heartbeat to Healthchecks.io when the bot process is alive. */
+  async #sendHealthcheck(): Promise<void> {
+    const url = process.env.HEALTHCHECKS_URL;
+    if (!url) return;
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        logger.warn(`Healthchecks ping failed: HTTP ${response.status}`);
+      }
+    } catch (error) {
+      logger.warn(`Healthchecks ping failed: ${String(error)}`);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
   /** Begin polling, running the first cycle immediately. */
   public start(): void {
     if (this.#timer) return;
@@ -128,9 +152,11 @@ export class StreamPoller {
     );
 
     void this.runCycle();
+    void this.#sendHealthcheck();
 
     this.#timer = setInterval(() => {
       void this.runCycle();
+      void this.#sendHealthcheck();
     }, config.polling.intervalMs);
   }
 
@@ -174,6 +200,7 @@ export class StreamPoller {
       logger.warn("Previous poll cycle still running; skipping this one");
       return empty;
     }
+
     if (this.#stopped) return empty;
 
     this.#running = true;
@@ -182,6 +209,7 @@ export class StreamPoller {
 
     try {
       const guilds = await this.#repository.getActiveGuilds();
+
       if (guilds.length === 0) return empty;
 
       const totals = { ...empty, guilds: guilds.length };
@@ -227,6 +255,7 @@ export class StreamPoller {
     streamers: readonly Streamer[],
   ): Promise<Omit<PollCycleResult, "guilds">> {
     const active = streamers.filter((streamer) => streamer.paused !== true);
+
     if (active.length === 0) {
       return { checked: 0, alerted: 0, failed: 0, paused: 0 };
     }
@@ -262,6 +291,7 @@ export class StreamPoller {
           patch.paused = true;
           patch.pausedReason = result.failure.reason;
           paused += 1;
+
           logger.warn(
             `Paused ${outcome.streamer.id} in guild ${guildId}: ${result.failure.reason}`,
           );
@@ -287,12 +317,17 @@ export class StreamPoller {
     const checker = getChecker(streamer.platform);
 
     let status: LiveStatus;
+
     try {
-      status = await checker(streamer.username, this.#abortController?.signal);
+      status = await checker(
+        streamer.username,
+        this.#abortController?.signal,
+      );
     } catch (error) {
       // Checkers are contracted not to throw, but a bug in one must not take
       // down the cycle for every other streamer.
       logger.error(`Checker for ${streamer.id} threw:`, error);
+
       status = {
         isLive: false,
         platform: streamer.platform,
@@ -317,7 +352,12 @@ export class StreamPoller {
         );
       }
 
-      return { streamer, status, patch, shouldAlert: false };
+      return {
+        streamer,
+        status,
+        patch,
+        shouldAlert: false,
+      };
     }
 
     const patch: Partial<Streamer> = {
@@ -359,11 +399,14 @@ export class StreamPoller {
 
     if (config.polling.alertCooldownMs > 0 && streamer.lastAlertedAt) {
       const lastAlerted = Date.parse(streamer.lastAlertedAt);
+
       if (
         Number.isFinite(lastAlerted) &&
         Date.now() - lastAlerted < config.polling.alertCooldownMs
       ) {
-        logger.debug(`Suppressing repeat alert for ${streamer.id} (cooldown)`);
+        logger.debug(
+          `Suppressing repeat alert for ${streamer.id} (cooldown)`,
+        );
         return false;
       }
     }
