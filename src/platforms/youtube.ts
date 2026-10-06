@@ -124,12 +124,7 @@ export async function checkYouTubeLive(
     parseJsonSafe(extractJsonAfter(html, INITIAL_DATA_MARKER)),
   );
 
-console.log("[youtube-debug]", {
-  username: handle,
-  htmlLength: html.length,
-  hasPlayer: !!player,
-  hasInitial: !!initial,
-});
+
 
   // Neither blob present means the page is not the one this parser was written
   // against — a redesign, a redirect to a login, or a soft block.
@@ -183,15 +178,6 @@ console.log("[youtube-debug]", {
 
   const isLiveNow = flag(details.isLive) === true;
 
-console.log("[youtube-debug]", {
-  username: handle,
-  isLive: details.isLive,
-  isLiveContent: details.isLiveContent,
-  videoId: details.videoId,
-  playability,
-  hasPlayer: !!player,
-  hasInitial: !!initial,
-});
   // A scheduled premiere sets isLiveContent without isLive; alerting on it
   // would announce a stream that has not started.
   if (!isLiveNow) {
