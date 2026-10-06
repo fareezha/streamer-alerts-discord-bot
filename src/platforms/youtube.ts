@@ -176,6 +176,15 @@ export async function checkYouTubeLive(
 
   const isLiveNow = flag(details.isLive) === true;
 
+console.log("[youtube-debug]", {
+  username: handle,
+  isLive: details.isLive,
+  isLiveContent: details.isLiveContent,
+  videoId: details.videoId,
+  playability,
+  hasPlayer: !!player,
+  hasInitial: !!initial,
+});
   // A scheduled premiere sets isLiveContent without isLive; alerting on it
   // would announce a stream that has not started.
   if (!isLiveNow) {
