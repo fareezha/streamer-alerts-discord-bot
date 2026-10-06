@@ -18,6 +18,7 @@ import { syncCommands } from "./services/CommandSync.js";
 import { StreamPoller } from "./services/StreamPoller.js";
 import { disposeContext, initialiseContext } from "./services/context.js";
 import { logger } from "./utils/logger.js";
+import { startHealthServer } from "./health.js";
 
 /** Longest a graceful shutdown may take before the process is forced down. */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
@@ -32,7 +33,7 @@ let shuttingDown = false;
  */
 async function main(): Promise<void> {
   logger.info("Starting streamer alerts bot");
-
+startHealthServer();
   const { repository } = await initialiseContext();
 
   if (config.discord.syncCommands) {

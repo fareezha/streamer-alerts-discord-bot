@@ -23,7 +23,8 @@
   },
   "dependencies": {
     "discord.js": "^14.27.0",
-    "dotenv": "^16.6.1"
+    "dotenv": "^16.6.1",
+    "tiktok-live-connector": "^2.5.0"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
