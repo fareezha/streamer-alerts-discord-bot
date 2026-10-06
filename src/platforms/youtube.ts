@@ -124,6 +124,13 @@ export async function checkYouTubeLive(
     parseJsonSafe(extractJsonAfter(html, INITIAL_DATA_MARKER)),
   );
 
+console.log("[youtube-debug]", {
+  username: handle,
+  htmlLength: html.length,
+  hasPlayer: !!player,
+  hasInitial: !!initial,
+});
+
   // Neither blob present means the page is not the one this parser was written
   // against — a redesign, a redirect to a login, or a soft block.
   if (!player && !initial) {
