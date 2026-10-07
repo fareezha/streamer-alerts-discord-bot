@@ -103,7 +103,9 @@ startHealthServer();
     void shutdown("uncaughtException").finally(() => process.exit(1));
   });
 
+logger.info("Connecting to Discord Gateway...");
   await client.login(config.discord.token);
+logger.info(`Logged in as ${client.user?.tag}`);
 }
 
 main().catch((error: unknown) => {
