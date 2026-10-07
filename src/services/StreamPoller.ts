@@ -117,29 +117,7 @@ export class StreamPoller {
     this.#repository = repository;
   }
 
-  /** Send a heartbeat to Healthchecks.io when the bot process is alive. */
-  async #sendHealthcheck(): Promise<void> {
-    const url = process.env.HEALTHCHECKS_URL;
-    if (!url) return;
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
-
-    try {
-      const response = await fetch(url, {
-        method: "GET",
-        signal: controller.signal,
-      });
-
-      if (!response.ok) {
-        logger.warn(`Healthchecks ping failed: HTTP ${response.status}`);
-      }
-    } catch (error) {
-      logger.warn(`Healthchecks ping failed: ${String(error)}`);
-    } finally {
-      clearTimeout(timeout);
-    }
-  }
 
   /** Begin polling, running the first cycle immediately. */
   public start(): void {
@@ -152,11 +130,11 @@ export class StreamPoller {
     );
 
     void this.runCycle();
-    void this.#sendHealthcheck();
+   
 
     this.#timer = setInterval(() => {
       void this.runCycle();
-      void this.#sendHealthcheck();
+    
     }, config.polling.intervalMs);
   }
 
