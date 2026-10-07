@@ -37,8 +37,10 @@ startHealthServer();
   const { repository } = await initialiseContext();
 
   if (config.discord.syncCommands) {
+	logger.info("Starting command sync...");
     try {
       await syncCommands();
+	logger.info("Command sync completed.");
     } catch (error) {
       // A failed sync leaves whatever Discord already had registered, which is
       // usually still serviceable. Refusing to start over it would turn a
