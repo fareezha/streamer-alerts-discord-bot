@@ -141,7 +141,11 @@ export async function syncCommands(
       )
     : Routes.applicationCommands(config.discord.clientId);
 
+logger.info(`Fetching Discord commands from ${route}`);
+
   const remote = (await client.get(route)) as RemoteCommand[];
+
+logger.info(`Fetched ${remote.length} Discord commands`);
 
   const localByName = new Map(local.map((command) => [command.name, command]));
   const remoteByName = new Map(
