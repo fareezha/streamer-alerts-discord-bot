@@ -19,7 +19,6 @@ import {
 import { config } from "../config/index.js";
 import { createCommandRegistry } from "../commands/index.js";
 import type { Command, StreamerBotClient } from "../types/discord.js";
-import type { GuildRepository } from "../storage/index.js";
 import { logger } from "../utils/logger.js";
 
 /**
@@ -81,15 +80,13 @@ export class StreamerBot extends Client implements StreamerBotClient {
    *
    * @param repository - Source of the tracked-streamer count.
    */
-  public startPresence(repository: GuildRepository): void {
+  public startPresence(): void {
     if (!config.runtime.presenceEnabled) return;
 
     const update = async (): Promise<void> => {
       try {
-        const count = await repository.getTotalStreamerCount();
-        const guilds = this.guilds.cache.size;
         this.user?.setActivity({
-          name: `${count} streamer${count === 1 ? "" : "s"} · ${guilds} server${guilds === 1 ? "" : "s"}`,
+          name: `YT: Diana Days | TikTok @ohlookitssin 🤍`,
           type: ActivityType.Watching,
         });
       } catch (error) {

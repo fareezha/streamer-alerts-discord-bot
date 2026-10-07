@@ -160,7 +160,7 @@ export function registerEvents(
     logger.info(`Logged in as ${ready.user.tag}`);
     logger.info(`Serving ${ready.guilds.cache.size} guild(s)`);
 
-    client.startPresence(getRepository());
+    client.startPresence();
     poller.start();
   });
 
